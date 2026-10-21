@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tab Pilot Settings</title>
+  <link rel="stylesheet" href="../shared/base.css">
+  <link rel="stylesheet" href="../popup/popup.css">
+  <link rel="stylesheet" href="options.css">
+  <script type="module" src="options.js"></script>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="../icons/icon.svg" alt="" width="32" height="32">
+        <div>
+          <div class="brand-name">Tab Pilot</div>
+          <div class="brand-ver" id="version"></div>
+        </div>
+      </div>
+      <nav id="nav" class="nav"></nav>
+      <div class="save-state" id="saveState" aria-live="polite"></div>
+    </aside>
+
+    <main class="content" id="content">
+      <section class="card shortcut-card" id="sec-shortcut">
+        <div class="card-head">
+          <h2>Open Tab Pilot</h2>
+          <p>Global shortcut that opens the search popup from anywhere in Firefox.</p>
+        </div>
+        <div id="commands"></div>
+        <p class="note">
+          Firefox reserves some shortcuts for itself (for example <kbd>Ctrl</kbd><kbd>T</kbd>, <kbd>Ctrl</kbd><kbd>W</kbd>).
+          You can also manage all extension shortcuts at <code>about:addons</code> → ⚙ → <em>Manage Extension Shortcuts</em>.
+        </p>
+      </section>
+
+      <div id="sections"></div>
+
+      <section class="card" id="sec-keys">
+        <div class="card-head">
+          <h2>Keyboard (inside the popup)</h2>
+          <p>Click <strong>+</strong> and press a key combination to add a binding. Each action can have several.</p>
+        </div>
+        <div id="keys" class="keys"></div>
+        <div class="row-buttons">
+          <button type="button" class="btn" id="resetKeys">Reset all key bindings</button>
+        </div>
+        <p class="note" id="reservedNote">
+          Firefox keeps a few shortcuts for itself and never passes them to extensions —
+          <kbd>Ctrl</kbd><kbd>N</kbd>, <kbd>Ctrl</kbd><kbd>T</kbd>, <kbd>Ctrl</kbd><kbd>W</kbd>,
+          <kbd>Ctrl</kbd><kbd>Shift</kbd><kbd>P</kbd>, <kbd>Ctrl</kbd><kbd>Tab</kbd> — so they can't be used here.
+          <kbd>Esc</kbd> always closes the popup.
+        </p>
+      </section>
+
+      <section class="card" id="sec-backup">
+        <div class="card-head">
+          <h2>Backup &amp; reset</h2>
+          <p>Settings sync across devices through your Firefox account when sync is enabled.</p>
+        </div>
+        <div class="row-buttons">
+          <button type="button" class="btn" id="export">Export settings</button>
+          <label class="btn" for="importFile">Import settings</label>
+          <input type="file" id="importFile" accept="application/json,.json" hidden>
+          <span class="grow"></span>
+          <button type="button" class="btn danger" id="resetAll">Reset everything</button>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

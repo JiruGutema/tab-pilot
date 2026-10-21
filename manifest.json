@@ -1,0 +1,59 @@
+{
+  "manifest_version": 3,
+  "name": "Tab Pilot",
+  "version": "1.1.0",
+  "description": "Lightning-fast fuzzy tab search with keyboard navigation (Alt+N / Alt+P), multi-source results and deep customization.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "tab-pilot@local",
+      "strict_min_version": "115.0",
+      "data_collection_permissions": {
+        "required": [
+          "none"
+        ]
+      }
+    }
+  },
+  "icons": {
+    "48": "icons/icon.svg",
+    "96": "icons/icon.svg"
+  },
+  "permissions": [
+    "tabs",
+    "sessions",
+    "storage",
+    "contextualIdentities",
+    "cookies",
+    "clipboardWrite",
+    "search"
+  ],
+  "optional_permissions": [
+    "bookmarks",
+    "history"
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "action": {
+    "default_title": "Search tabs",
+    "default_popup": "popup/popup.html",
+    "default_icon": "icons/icon.svg"
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Space"
+      },
+      "description": "Open Tab Pilot"
+    },
+    "previous-tab": {
+      "description": "Jump to the previously used tab"
+    }
+  }
+}

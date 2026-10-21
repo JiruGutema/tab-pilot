@@ -37,7 +37,7 @@ Press **Ctrl+Shift+Space**, type a few letters, and press **Enter**. Use **Alt+N
 
 You can rebind every key in Settings.
 
-> **Why not Ctrl+N?** Firefox reserves Ctrl+N, Ctrl+T, Ctrl+W, Ctrl+Shift+P and Ctrl+Tab. These keys never reach an extension: Ctrl+N inside the popup opens a new window. This was tested in Firefox 157. The settings page won't let you bind these keys.
+**Why not Ctrl+N?** Firefox reserves Ctrl+N, Ctrl+T, Ctrl+W, Ctrl+Shift+P and Ctrl+Tab. These keys never reach an extension: Ctrl+N inside the popup opens a new window. This was tested in Firefox 157. The settings page won't let you bind these keys.
 
 ## Settings
 

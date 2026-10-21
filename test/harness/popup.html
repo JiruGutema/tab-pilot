@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Tab Pilot</title>
+  <script src="mock-browser.js"></script>
+  <link rel="stylesheet" href="../../shared/base.css">
+  <link rel="stylesheet" href="../../popup/popup.css">
+  <script type="module" src="../../popup/popup.js"></script>
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="searchbar">
+      <i data-icon="search" data-size="18" class="search-icon"></i>
+      <input id="q" type="text" autocomplete="off" spellcheck="false" autofocus
+             placeholder="Search tabs…" aria-label="Search tabs" aria-controls="list" aria-autocomplete="list">
+      <span id="count" class="count" aria-live="polite"></span>
+      <button id="helpBtn" class="icon-btn" type="button" title="Help & search syntax"><i data-icon="help" data-size="16"></i></button>
+      <button id="settingsBtn" class="icon-btn" type="button" title="Settings"><i data-icon="settings" data-size="16"></i></button>
+    </header>
+    <div id="chips" class="chips" hidden></div>
+    <main id="list" class="list" role="listbox" aria-label="Results" tabindex="-1"></main>
+    <div id="empty" class="empty" hidden>
+      <div class="empty-icon"><i data-icon="search" data-size="28"></i></div>
+      <div class="empty-title">No matches</div>
+      <div class="empty-sub" id="emptySub"></div>
+    </div>
+    <footer id="footer" class="footer"></footer>
+
+    <section id="help" class="help" hidden aria-label="Help">
+      <div class="help-head">
+        <h2>Keyboard &amp; search syntax</h2>
+        <button id="helpClose" class="icon-btn" type="button" title="Close help"><i data-icon="x" data-size="16"></i></button>
+      </div>
+      <div class="help-body" id="helpBody"></div>
+    </section>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

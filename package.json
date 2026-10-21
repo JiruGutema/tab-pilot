@@ -1,0 +1,13 @@
+{
+  "name": "tab-pilot",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Fuzzy tab search for Firefox",
+  "scripts": {
+    "test": "node --test test/search.test.mjs test/settings.test.mjs",
+    "start": "npx web-ext run --source-dir . --ignore-files test package.json README.md",
+    "lint": "npx web-ext lint --source-dir . --ignore-files test package.json README.md \"*.zip\"",
+    "build": "npx web-ext build --source-dir . --ignore-files test package.json README.md \"*.zip\" --overwrite-dest"
+  }
+}
