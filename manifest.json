@@ -1,11 +1,11 @@
 {
   "manifest_version": 3,
   "name": "Tab Pilot",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Lightning-fast fuzzy tab search with keyboard navigation (Alt+N / Alt+P), multi-source results and deep customization.",
   "browser_specific_settings": {
     "gecko": {
-      "id": "tab-pilot@local",
+      "id": "tab-pilot@jirugutema.github.io",
       "strict_min_version": "115.0",
       "data_collection_permissions": {
         "required": [

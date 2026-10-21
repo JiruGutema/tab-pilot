@@ -16,6 +16,7 @@ Press **Ctrl+Shift+Space**, type a few letters, and press **Enter**. Use **Alt+N
   | `@pinned @audio @muted @dup @unloaded @here @private` | tab state |
   | `@tabs @closed @bookmarks @history` (`@t @c @b @h`) | choose sources |
 
+- **Open typed URLs:** type `example.com`, `localhost:3000` or a full `https://…` address and press Enter to open it in a new tab.
 - **Multiple sources:** open tabs, recently closed tabs and windows, bookmarks and history. Bookmarks and history are opt-in, and their permission is requested only when you turn them on.
 - **Tab actions from the keyboard:** close, pin, mute, reload, duplicate, unload, move to this window, copy URL, reopen the last closed tab. Mark several tabs to act on all of them at once.
 - **Badges:** pinned, playing or muted, unloaded, duplicate, container, window, time since last used.
@@ -57,11 +58,16 @@ Settings sync through Firefox Sync.
 ## Development
 
 ```sh
-npm test            # search-engine unit tests (node --test)
-npm start           # run in a temporary Firefox profile (web-ext)
-npm run lint        # web-ext lint
-npm run build       # zip in web-ext-artifacts/
+make                # list available targets
+make test           # search-engine unit tests (node --test)
+make run            # run in a temporary Firefox profile (web-ext)
+make lint           # web-ext lint
+make build          # zip in web-ext-artifacts/
+make install        # build and install into the default Firefox profile
+make uninstall      # remove it from that profile
 ```
+
+Installation targets use the profile marked `Default=1` in `profiles.ini`. Override it with `make install PROFILE=/path/to/profile`. Restart Firefox after installing. Unsigned add-ons need Developer Edition/Nightly or `xpinstall.signatures.required=false` in `about:config`.
 
 To load the extension by hand, open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on…** and pick `manifest.json`.
 

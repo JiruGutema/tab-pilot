@@ -1,6 +1,6 @@
 import { loadSettings, applyTheme, ACTIONS } from "../shared/settings.js";
 import { comboFromEvent, buildKeymap, comboCaps, normalizeCombo } from "../shared/keys.js";
-import { parseQuery, matchItem, recencyBonus, prepare, hasFilters, FLAG_FILTERS, SOURCE_FILTERS } from "../shared/search.js";
+import { parseQuery, matchItem, recencyBonus, prepare, hasFilters, detectUrl, FLAG_FILTERS, SOURCE_FILTERS } from "../shared/search.js";
 import { icon, hydrateIcons } from "../shared/icons.js";
 
 const $ = (sel) => document.querySelector(sel);
@@ -11,6 +11,7 @@ const els = {
   list: $("#list"),
   count: $("#count"),
   chips: $("#chips"),
+  urlHint: $("#urlHint"),
   empty: $("#empty"),
   emptySub: $("#emptySub"),
   footer: $("#footer"),
@@ -20,8 +21,8 @@ const els = {
 };
 
 const CHUNK = 80;
-const SECTION_LABELS = { tab: "Tabs", closed: "Recently closed", bookmark: "Bookmarks", history: "History", web: "Web" };
-const SECTION_ICONS = { tab: "window", closed: "undo", bookmark: "star", history: "clock", web: "globe" };
+const SECTION_LABELS = { tab: "Tabs", closed: "Recently closed", bookmark: "Bookmarks", history: "History", web: "Web", url: "Open URL" };
+const SECTION_ICONS = { tab: "window", closed: "undo", bookmark: "star", history: "clock", web: "globe", url: "globe" };
 
 const state = {
   s: null,
@@ -42,6 +43,7 @@ const state = {
 
   query: "",
   parsed: parseQuery(""),
+  typedUrl: null,
   entries: [],
   selected: 0,
   rendered: 0,
@@ -294,6 +296,16 @@ function recompute({ keepSelection = false } = {}) {
   const entries = [];
   const seen = new Set();
 
+  state.typedUrl = emptyQuery ? null : detectUrl(state.query);
+  if (state.typedUrl) {
+    entries.push({
+      kind: "url",
+      key: "url",
+      item: { title: `Open ${state.typedUrl.display}`, url: state.typedUrl.url },
+      match: null,
+    });
+  }
+
   if (sourceEnabled("tab", q, emptyQuery)) {
     const tabs = searchTabs(q, emptyQuery);
     entries.push(...tabs);
@@ -396,7 +408,7 @@ function letterIcon(seed) {
 
 function faviconFor(entry) {
   const { item, kind } = entry;
-  if (kind === "web") { const g = el("div", "fav glyph"); g.append(icon("globe", 13)); return g; }
+  if (kind === "web" || kind === "url") { const g = el("div", "fav glyph"); g.append(icon("globe", 13)); return g; }
   const host = item._prep?.host ?? hostOf(item.url);
   let src = item.favIconUrl;
   if (!src && host) src = state.hostIcons.get(host);
@@ -470,6 +482,8 @@ function metaFor(entry) {
     }
   } else if (kind === "history") {
     if (s.showLastAccessed) meta.append(el("span", "time", relTime(item.lastVisitTime)));
+  } else if (kind === "url") {
+    meta.append(badge("open", null, "new tab", "Open this URL in a new tab"));
   }
   return meta;
 }
@@ -500,7 +514,7 @@ function rowFor(entry, index) {
   title.title = titleText;
   text.append(title);
 
-  if (s.showUrl && p && p.display) {
+  if (s.showUrl && p && p.display && kind !== "url") {
     const url = el("div", "url");
     const positions = match?.urlPositions;
     const deep = positions && [...positions].some((x) => x >= p.host.length);
@@ -511,7 +525,7 @@ function rowFor(entry, index) {
   }
   row.append(text, metaFor(entry));
 
-  if (kind !== "web" && kind !== "bookmark") {
+  if (kind !== "web" && kind !== "bookmark" && kind !== "url") {
     const actions = el("div", "row-actions");
     const btn = el("button", "row-btn");
     btn.type = "button";
@@ -591,6 +605,7 @@ function render() {
   updateSelection(false);
   updateCount();
   updateChips();
+  updateUrlHint();
   updateFooter();
 }
 
@@ -669,6 +684,22 @@ function setQuery(text) {
   els.input.focus();
 }
 
+function updateUrlHint() {
+  if (!state.typedUrl) {
+    els.urlHint.hidden = true;
+    return;
+  }
+  els.urlHint.textContent = "";
+  els.urlHint.append(
+    el("span", null, "Press"),
+    kbdGroup(firstCombo("open")),
+    el("span", null, "to open"),
+    el("strong", "url-hint-text", state.typedUrl.display),
+    el("span", null, "in a new tab"),
+  );
+  els.urlHint.hidden = false;
+}
+
 function kbdGroup(combo) {
   const g = el("span", "kbd-group");
   for (const cap of comboCaps(combo)) g.append(el("kbd", null, cap));
@@ -692,7 +723,7 @@ function updateFooter() {
   };
   hint([firstCombo("next"), firstCombo("prev")], "navigate");
   const sel = state.entries[state.selected];
-  hint([firstCombo("open")], sel && sel.kind !== "tab" ? "open" : "switch");
+  hint([firstCombo("open")], sel?.kind === "url" ? "open in new tab" : sel && sel.kind !== "tab" ? "open" : "switch");
   if (!sel || sel.kind === "tab") hint([firstCombo("closeTab")], state.marked.size ? `close ${state.marked.size}` : "close");
   hint([firstCombo("toggleMark")], "mark");
   f.append(el("span", "spacer"));
@@ -718,6 +749,7 @@ function buildHelp() {
     ["!word", "exclude results containing word"],
     ["site:github", "filter by domain"],
     ["in:work", "filter by container"],
+    ["example.com", "open the URL in a new tab"],
     ["@pinned  @audio  @muted", "tab state"],
     ["@dup  @unloaded  @here", "duplicates, sleeping, this window"],
     ["@tabs @closed @bookmarks @history", "pick sources (@t @c @b @h)"],
@@ -813,6 +845,9 @@ async function openEntry(entry, where = "default") {
       else await focusTab(item);
     } else if (kind === "closed") {
       await browser.sessions.restore(item.sessionId);
+    } else if (kind === "url") {
+      if (where === "window") await browser.windows.create({ url: item.url });
+      else await browser.tabs.create({ url: item.url, active: true });
     } else if (kind === "web") {
       await browser.search.search({ query: item.query, disposition: where === "window" ? "NEW_WINDOW" : "NEW_TAB" });
     } else {

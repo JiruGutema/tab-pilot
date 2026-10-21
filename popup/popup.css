@@ -133,6 +133,31 @@ body {
   margin-right: 2px;
 }
 
+/* ───── Typed URL hint ───── */
+.url-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--highlight-bg);
+  color: var(--fg-muted);
+  font-size: 11px;
+  flex: none;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.url-hint[hidden] {
+  display: none;
+}
+.url-hint-text {
+  color: var(--highlight);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
 /* ───── Result list ───── */
 .list {
   flex: 1;

@@ -234,6 +234,72 @@ function hasFilters(q) {
 }
 export { hasFilters };
 
+// ───────────────────────── URL detection ─────────────────────────
+
+const URL_SCHEME = /^([a-z][a-z0-9+.-]*):\/\//i;
+const DOMAIN_LABEL = /^[\p{L}\p{N}](?:[\p{L}\p{N}-]*[\p{L}\p{N}])?$/u;
+const TLD = /^(?:[a-z]{2,63}|xn--[a-z0-9-]{2,})$/i;
+
+function isIpv4(host) {
+  return /^\d{1,3}(?:\.\d{1,3}){3}$/.test(host) && host.split(".").every((p) => Number(p) <= 255);
+}
+
+function looksLikeHost(host) {
+  if (!host) return false;
+  if (/^localhost$/i.test(host) || isIpv4(host)) return true;
+  if (/^\[[0-9a-f:.]+\]$/i.test(host)) return true;
+  const labels = host.split(".");
+  if (labels.length < 2) return false;
+  if (!labels.every((l) => l.length <= 63 && DOMAIN_LABEL.test(l))) return false;
+  return TLD.test(labels[labels.length - 1]);
+}
+
+function displayUrl(raw, hadScheme) {
+  const noScheme = hadScheme ? raw.replace(URL_SCHEME, "") : raw;
+  return noScheme.replace(/^www\./i, "").replace(/^([^/?#]+)\/$/, "$1");
+}
+
+/**
+ * If `input` looks like a URL the user wants to visit (example.com, localhost:3000,
+ * https://…), return {url, display} with an absolute URL, otherwise null.
+ */
+export function detectUrl(input) {
+  const raw = (input || "").trim();
+  if (!raw || raw.length > 2048 || /\s/.test(raw)) return null;
+
+  const scheme = URL_SCHEME.exec(raw);
+  if (scheme) {
+    if (!/^https?$/i.test(scheme[1])) return null;
+    try {
+      const u = new URL(raw);
+      if (!u.hostname) return null;
+      return { url: u.href, display: displayUrl(raw, true) };
+    } catch {
+      return null;
+    }
+  }
+
+  // Reject unknown schemes such as site:github, but keep host:port.
+  if (/^[a-z][a-z0-9+.-]*:/i.test(raw) && !/^[^:/?#]+:\d+(?:[/?#]|$)/i.test(raw)) return null;
+
+  const hostEnd = raw.search(/[/?#]/);
+  const authority = hostEnd < 0 ? raw : raw.slice(0, hostEnd);
+  const rest = hostEnd < 0 ? "" : raw.slice(hostEnd);
+  const portMatch = /^(.*?):(\d{1,5})$/.exec(authority);
+  const host = portMatch ? portMatch[1] : authority;
+  const port = portMatch ? Number(portMatch[2]) : 0;
+  if (portMatch && (port < 1 || port > 65535)) return null;
+  if (!looksLikeHost(host)) return null;
+
+  try {
+    const u = new URL(`https://${authority}${rest}`);
+    if (!u.hostname) return null;
+    return { url: u.href, display: displayUrl(raw, false) };
+  } catch {
+    return null;
+  }
+}
+
 // ───────────────────────── Matching items ─────────────────────────
 
 /**

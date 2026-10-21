@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { fuzzyMatch, substringMatch, parseQuery, matchItem, fold, prepare } from "../shared/search.js";
+import { fuzzyMatch, substringMatch, parseQuery, matchItem, fold, prepare, detectUrl } from "../shared/search.js";
 import { DEFAULTS } from "../shared/settings.js";
 
 const opts = { mode: "fuzzy", caseSensitivity: "smart", searchUrls: true, titleWeight: 2 };
@@ -85,6 +85,22 @@ test("long text and performance", () => {
   rank("ex pg", items);
   const dt = performance.now() - t0;
   assert.ok(dt < 400, `took ${dt}ms`);
+});
+
+test("detectUrl recognizes URLs", () => {
+  assert.deepEqual(detectUrl("example.com"), { url: "https://example.com/", display: "example.com" });
+  assert.deepEqual(detectUrl("www.mail.google.com/mail/u/0"), { url: "https://www.mail.google.com/mail/u/0", display: "mail.google.com/mail/u/0" });
+  assert.equal(detectUrl("https://example.com/path?q=1#top").url, "https://example.com/path?q=1#top");
+  assert.equal(detectUrl("HTTP://Example.COM/").url, "http://example.com/");
+  assert.equal(detectUrl("localhost:3000").url, "https://localhost:3000/");
+  assert.equal(detectUrl("192.168.0.1/admin").url, "https://192.168.0.1/admin");
+  assert.equal(detectUrl("[::1]:8080").url, "https://[::1]:8080/");
+});
+
+test("detectUrl ignores non-URL queries", () => {
+  for (const q of ["", "hello world", "example", "site:github", "@pinned", "!draft", "3.14", "version 1.2", "http://", "ftp://example.com", "example.com:99999"]) {
+    assert.equal(detectUrl(q), null, q);
+  }
 });
 
 test("default search settings use words match mode", () => {
